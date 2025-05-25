@@ -8,7 +8,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,30 +33,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            String email = jwtTokenUtil.extractUsername(token);
+
+            String email = null;
+            try {
+                email = jwtTokenUtil.extractEmail(token);
+            } catch (Exception e) {
+                //
+            }
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                Optional<User> userOpt = userRepository.findByEmail(email);
-                Optional<Admin> adminOpt = adminRepository.findByEmail(email);
-
-                if (userOpt.isPresent() && jwtTokenUtil.validateToken(token, email)) {
-                    User user = userOpt.get();
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(email, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                } else if (adminOpt.isPresent() && jwtTokenUtil.validateToken(token, email)) {
-                    Admin admin = adminOpt.get();
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(email, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                boolean validToken = jwtTokenUtil.validateToken(token, email);
+                if (validToken) {
+                    Optional<User> userOpt = userRepository.findByEmail(email);
+                    if (userOpt.isPresent()) {
+                        User user = userOpt.get();
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                user, null, List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    } else {
+                        Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+                        if (adminOpt.isPresent()) {
+                            Admin admin = adminOpt.get();
+                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                    admin, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                            );
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                        }
+                    }
                 }
             }
         }
@@ -64,4 +75,3 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
-

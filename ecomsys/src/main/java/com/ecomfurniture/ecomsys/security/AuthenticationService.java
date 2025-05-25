@@ -9,38 +9,27 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticationService {
+
     private final UserRepository userRepository;
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public AuthenticationService(UserRepository userRepository, AdminRepository adminRepository, PasswordEncoder passwordEncoder) {
+    public AuthenticationService(UserRepository userRepository, AdminRepository adminRepository, PasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil) {
         this.userRepository = userRepository;
         this.adminRepository = adminRepository;
         this.passwordEncoder = passwordEncoder;
-    }
-
-    public boolean authenticateUser(String email, String password) {
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user == null || !user.isEmailVerified()) {
-            return false;
-        }
-
-        return passwordEncoder.matches(password, user.getPassword());
-    }
-
-    public boolean authenticateAdmin(String email, String password) {
-        Admin admin = adminRepository.findByEmail(email).orElse(null);
-        if (admin == null || !admin.isEmailVerified()) {
-            return false;
-        }
-
-        return passwordEncoder.matches(password, admin.getPassword());
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     public String authenticateAndGenerateToken(String email, String password) {
-        boolean isAuthenticated = authenticateUser(email, password);
-        if (isAuthenticated) {
-            return JwtTokenUtil.generateToken(email);
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user != null && user.isEmailVerified() && passwordEncoder.matches(password, user.getPassword())) {
+            return jwtTokenUtil.generateToken(email);
+        }
+        Admin admin = adminRepository.findByEmail(email).orElse(null);
+        if (admin != null && admin.isEmailVerified() && passwordEncoder.matches(password, admin.getPassword())) {
+            return jwtTokenUtil.generateToken(email);
         }
         return null;
     }

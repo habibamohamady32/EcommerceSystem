@@ -1,5 +1,6 @@
 package com.ecomfurniture.ecomsys.services;
 
 public interface VerificationService {
-    boolean verifyToken(String token);
+    boolean verifyUserToken(String token);
+    boolean verifyAdminToken(String token);
 }

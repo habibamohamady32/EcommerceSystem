@@ -19,8 +19,19 @@ public class VerificationController {
     }
 
     @GetMapping
-    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
-        boolean isVerified = verificationService.verifyToken(token);
+    public ResponseEntity<String> verifyEmail(
+            @RequestParam("token") String token,
+            @RequestParam("userType") String userType) {
+
+        boolean isVerified;
+        if ("admin".equalsIgnoreCase(userType)) {
+            isVerified = verificationService.verifyAdminToken(token);
+        } else if ("user".equalsIgnoreCase(userType)) {
+            isVerified = verificationService.verifyUserToken(token);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid userType parameter, Use 'admin' or 'user'.");
+        }
+
         if (isVerified) {
             return ResponseEntity.ok("Email successfully verified!");
         } else {

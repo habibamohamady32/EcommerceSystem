@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/register")
 public class UserController {
     private final UserService userService;
 
@@ -19,7 +19,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/user")
     public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterUserDTO dto) {
         userService.registerUser(dto);
         return ResponseEntity.ok(new AuthResponseDTO("User registered successfully. Check your email for verification."));

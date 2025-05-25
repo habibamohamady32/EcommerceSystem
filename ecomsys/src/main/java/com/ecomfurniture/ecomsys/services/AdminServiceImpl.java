@@ -4,10 +4,8 @@ import com.ecomfurniture.ecomsys.dtos.RegisterAdminDTO;
 import com.ecomfurniture.ecomsys.entity.Admin;
 import com.ecomfurniture.ecomsys.entity.Role;
 import com.ecomfurniture.ecomsys.entity.RoleName;
-import com.ecomfurniture.ecomsys.entity.VerificationToken;
 import com.ecomfurniture.ecomsys.repositories.AdminRepository;
 import com.ecomfurniture.ecomsys.repositories.RoleRepository;
-import com.ecomfurniture.ecomsys.repositories.VerificationTokenRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,17 +16,20 @@ import java.util.UUID;
 public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final RoleRepository roleRepository;
-    private final VerificationTokenRepository tokenRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final AdminConfirmationTokenService adminConfirmationTokenService;
 
-    public AdminServiceImpl(AdminRepository adminRepository, VerificationTokenRepository tokenRepository, RoleRepository roleRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
+    public AdminServiceImpl(AdminRepository adminRepository, RoleRepository roleRepository,
+                            EmailService emailService, PasswordEncoder passwordEncoder,
+                            AdminConfirmationTokenService adminConfirmationTokenService) {
         this.adminRepository = adminRepository;
-        this.tokenRepository = tokenRepository;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.adminConfirmationTokenService = adminConfirmationTokenService;
     }
+
 
     public void registerAdmin(RegisterAdminDTO dto) {
         Admin admin = new Admin();
@@ -43,12 +44,7 @@ public class AdminServiceImpl implements AdminService {
 
         adminRepository.save(admin);
 
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setAdmin(admin);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(24));
-        tokenRepository.save(verificationToken);
+        String token = adminConfirmationTokenService.createToken(admin);
 
         String verificationLink = "http://localhost:8080/api/auth/verify?token=" + token;
         String message = "Please verify your email using the following link: " + verificationLink;

@@ -2,45 +2,74 @@ package com.ecomfurniture.ecomsys.services;
 
 import com.ecomfurniture.ecomsys.entity.Admin;
 import com.ecomfurniture.ecomsys.entity.User;
-import com.ecomfurniture.ecomsys.entity.VerificationToken;
+import com.ecomfurniture.ecomsys.entity.AdminConfirmationToken;
+import com.ecomfurniture.ecomsys.entity.UserConfirmationToken;
+import com.ecomfurniture.ecomsys.repositories.AdminConfirmationTokenRepository;
 import com.ecomfurniture.ecomsys.repositories.AdminRepository;
+import com.ecomfurniture.ecomsys.repositories.UserConfirmationTokenRepository;
 import com.ecomfurniture.ecomsys.repositories.UserRepository;
-import com.ecomfurniture.ecomsys.repositories.VerificationTokenRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class VerificationServiceImpl implements VerificationService {
-    private final VerificationTokenRepository tokenRepository;
+
+    private final UserConfirmationTokenRepository userTokenRepository;
+    private final AdminConfirmationTokenRepository adminTokenRepository;
     private final UserRepository userRepository;
     private final AdminRepository adminRepository;
 
-    public VerificationServiceImpl(VerificationTokenRepository tokenRepository, UserRepository userRepository, AdminRepository adminRepository) {
-        this.tokenRepository = tokenRepository;
+    public VerificationServiceImpl(UserConfirmationTokenRepository userTokenRepository,
+                                   AdminConfirmationTokenRepository adminTokenRepository,
+                                   UserRepository userRepository,
+                                   AdminRepository adminRepository) {
+        this.userTokenRepository = userTokenRepository;
+        this.adminTokenRepository = adminTokenRepository;
         this.userRepository = userRepository;
         this.adminRepository = adminRepository;
     }
 
-    public boolean verifyToken(String token) {
-        VerificationToken verificationToken = tokenRepository.findByToken(token)
-                .orElse(null);
-
-        if (verificationToken == null || verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+    @Override
+    public boolean verifyUserToken(String token) {
+        Optional<UserConfirmationToken> optionalToken = userTokenRepository.findByToken(token);
+        if (optionalToken.isEmpty()) {
             return false;
         }
 
-        if (verificationToken.getUser() != null) {
-            User user = verificationToken.getUser();
-            user.setEmailVerified(true);
-            userRepository.save(user);
-        } else if (verificationToken.getAdmin() != null) {
-            Admin admin = verificationToken.getAdmin();
-            admin.setEmailVerified(true);
-            adminRepository.save(admin);
+        UserConfirmationToken confirmationToken = optionalToken.get();
+
+        if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
         }
 
-        tokenRepository.delete(verificationToken);
+        User user = confirmationToken.getUser();
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        userTokenRepository.delete(confirmationToken);
+        return true;
+    }
+
+    @Override
+    public boolean verifyAdminToken(String token) {
+        Optional<AdminConfirmationToken> optionalToken = adminTokenRepository.findByToken(token);
+        if (optionalToken.isEmpty()) {
+            return false;
+        }
+
+        AdminConfirmationToken confirmationToken = optionalToken.get();
+
+        if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        Admin admin = confirmationToken.getAdmin();
+        admin.setEmailVerified(true);
+        adminRepository.save(admin);
+
+        adminTokenRepository.delete(confirmationToken);
         return true;
     }
 }

@@ -4,10 +4,8 @@ import com.ecomfurniture.ecomsys.dtos.RegisterUserDTO;
 import com.ecomfurniture.ecomsys.entity.Role;
 import com.ecomfurniture.ecomsys.entity.RoleName;
 import com.ecomfurniture.ecomsys.entity.User;
-import com.ecomfurniture.ecomsys.entity.VerificationToken;
 import com.ecomfurniture.ecomsys.repositories.RoleRepository;
 import com.ecomfurniture.ecomsys.repositories.UserRepository;
-import com.ecomfurniture.ecomsys.repositories.VerificationTokenRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,17 +16,20 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final VerificationTokenRepository tokenRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final UserConfirmationTokenService userConfirmationTokenService;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, VerificationTokenRepository tokenRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+                           EmailService emailService, PasswordEncoder passwordEncoder,
+                           UserConfirmationTokenService userConfirmationTokenService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.tokenRepository = tokenRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.userConfirmationTokenService = userConfirmationTokenService;
     }
+
 
     @Override
     public void registerUser(RegisterUserDTO dto) {
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserService{
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setAddress(dto.getAddress());
         user.setPhonenumber(dto.getPhonenumber());
 
@@ -50,12 +51,7 @@ public class UserServiceImpl implements UserService{
 
         userRepository.save(user);
 
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setUser(user);
-        verificationToken.setExpiryDate(LocalDateTime.now().plusMinutes(15));
-        tokenRepository.save(verificationToken);
+        String token = userConfirmationTokenService.createToken(user);
 
         String verificationLink = "http://localhost:8080/api/auth/verify?token=" + token;
         String message = "Please verify your email using the following link: " + verificationLink;
