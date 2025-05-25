@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/register")
 public class AdminController {
+
     private final AdminService adminService;
 
     public AdminController(AdminService adminService) {
@@ -19,8 +20,8 @@ public class AdminController {
     }
 
     @PostMapping("/admin")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterAdminDTO dto) {
+    public ResponseEntity<?> registerAdmin(@RequestBody RegisterAdminDTO dto) {
         adminService.registerAdmin(dto);
-        return ResponseEntity.ok("Admin registered successfully. Check your email for verification.");
+        return ResponseEntity.ok("Admin registered. Please verify your email.");
     }
 }

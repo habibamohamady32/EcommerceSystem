@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "admins")
 @NoArgsConstructor
@@ -36,6 +38,45 @@ public class Admin {
     private Role role;
     @Column(name = "email_verified")
     private boolean emailVerified = false;
+
+    @Column(name = "verification_token")
+    private String verificationToken;
+    @Column(name = "token_created_at")
+    private LocalDateTime tokenCreatedAt;
+    private LocalDateTime tokenExpiresAt;
+    private LocalDateTime tokenConfirmedAt;
+
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
+    }
+
+    public LocalDateTime getTokenCreatedAt() {
+        return tokenCreatedAt;
+    }
+
+    public void setTokenCreatedAt(LocalDateTime tokenCreatedAt) {
+        this.tokenCreatedAt = tokenCreatedAt;
+    }
+
+    public LocalDateTime getTokenExpiresAt() {
+        return tokenExpiresAt;
+    }
+
+    public void setTokenExpiresAt(LocalDateTime tokenExpiresAt) {
+        this.tokenExpiresAt = tokenExpiresAt;
+    }
+
+    public LocalDateTime getTokenConfirmedAt() {
+        return tokenConfirmedAt;
+    }
+
+    public void setTokenConfirmedAt(LocalDateTime tokenConfirmedAt) {
+        this.tokenConfirmedAt = tokenConfirmedAt;
+    }
 
     public String getPassword() {
         return password;

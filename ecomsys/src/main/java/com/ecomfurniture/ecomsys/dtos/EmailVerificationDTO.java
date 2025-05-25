@@ -8,6 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class EmailVerificationDTO {
-    private String email;
-    private String verificationLink;
+    private String token;
 }

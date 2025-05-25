@@ -37,23 +37,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
+        System.out.println("Auth Header: " + authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+            System.out.println("Token extracted: " + token);
 
             String email = null;
             try {
                 email = jwtTokenUtil.extractEmail(token);
+                System.out.println("Email extracted from token: " + email);
             } catch (Exception e) {
-                //
+                System.out.println("Error extracting email from token: " + e.getMessage());
             }
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 boolean validToken = jwtTokenUtil.validateToken(token, email);
+                System.out.println("Token valid? " + validToken);
                 if (validToken) {
                     Optional<User> userOpt = userRepository.findByEmail(email);
                     if (userOpt.isPresent()) {
                         User user = userOpt.get();
+                        System.out.println("User found: " + user.getEmail());
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                                 user, null, List.of(new SimpleGrantedAuthority("ROLE_USER"))
                         );
@@ -62,10 +67,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         Optional<Admin> adminOpt = adminRepository.findByEmail(email);
                         if (adminOpt.isPresent()) {
                             Admin admin = adminOpt.get();
+                            System.out.println("Admin found: " + admin.getEmail());
                             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                                     admin, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
                             );
                             SecurityContextHolder.getContext().setAuthentication(authToken);
+                        } else {
+                            System.out.println("No user or admin found with email: " + email);
                         }
                     }
                 }

@@ -15,6 +15,7 @@ public class JwtTokenUtil {
     public JwtTokenUtil(@Value("${jwt.secret}") String secretKey) {
         this.secretKey = secretKey;
     }
+
     public String generateToken(String username) {
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
 
@@ -24,6 +25,7 @@ public class JwtTokenUtil {
                 .withExpiresAt(new Date(System.currentTimeMillis() + 600_000)) //10 min
                 .sign(algorithm);
     }
+
     public boolean validateToken(String token, String username) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
@@ -33,6 +35,7 @@ public class JwtTokenUtil {
             return false;
         }
     }
+
     public String extractEmail(String token) {
         return JWT.require(Algorithm.HMAC256(secretKey))
                 .build()

@@ -9,27 +9,22 @@ import com.ecomfurniture.ecomsys.repositories.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    private final UserConfirmationTokenService userConfirmationTokenService;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-                           EmailService emailService, PasswordEncoder passwordEncoder,
-                           UserConfirmationTokenService userConfirmationTokenService) {
+                           EmailService emailService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
-        this.userConfirmationTokenService = userConfirmationTokenService;
     }
-
 
     @Override
     public void registerUser(RegisterUserDTO dto) {
@@ -49,9 +44,11 @@ public class UserServiceImpl implements UserService{
 
         user.setEmailVerified(false);
 
-        userRepository.save(user);
+        String token = UUID.randomUUID().toString();
+        user.setVerificationToken(token);
+        user.setTokenCreatedAt(java.time.LocalDateTime.now());
 
-        String token = userConfirmationTokenService.createToken(user);
+        userRepository.save(user);
 
         String verificationLink = "http://localhost:8080/api/auth/verify?token=" + token;
         String message = "Please verify your email using the following link: " + verificationLink;

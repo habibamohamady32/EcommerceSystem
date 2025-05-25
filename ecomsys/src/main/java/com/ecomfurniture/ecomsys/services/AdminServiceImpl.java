@@ -9,7 +9,6 @@ import com.ecomfurniture.ecomsys.repositories.RoleRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -18,19 +17,16 @@ public class AdminServiceImpl implements AdminService {
     private final RoleRepository roleRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    private final AdminConfirmationTokenService adminConfirmationTokenService;
 
     public AdminServiceImpl(AdminRepository adminRepository, RoleRepository roleRepository,
-                            EmailService emailService, PasswordEncoder passwordEncoder,
-                            AdminConfirmationTokenService adminConfirmationTokenService) {
+                            EmailService emailService, PasswordEncoder passwordEncoder) {
         this.adminRepository = adminRepository;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
-        this.adminConfirmationTokenService = adminConfirmationTokenService;
     }
 
-
+    @Override
     public void registerAdmin(RegisterAdminDTO dto) {
         Admin admin = new Admin();
         admin.setUsername(dto.getUsername());
@@ -42,9 +38,11 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new RuntimeException("Admin role not found"));
         admin.setRole(adminRole);
 
-        adminRepository.save(admin);
+        String token = UUID.randomUUID().toString();
+        admin.setVerificationToken(token);
+        admin.setTokenCreatedAt(java.time.LocalDateTime.now());
 
-        String token = adminConfirmationTokenService.createToken(admin);
+        adminRepository.save(admin);
 
         String verificationLink = "http://localhost:8080/api/auth/verify?token=" + token;
         String message = "Please verify your email using the following link: " + verificationLink;
