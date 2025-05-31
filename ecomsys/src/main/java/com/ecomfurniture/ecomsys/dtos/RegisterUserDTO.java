@@ -14,7 +14,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class RegisterUserDTO {
     @NotBlank(message = "Username is required")
-    @Column(unique = true)
     private String username;
 
     @NotBlank(message = "Email is required")
@@ -24,7 +23,7 @@ public class RegisterUserDTO {
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 18, message = "Password must be between 8 and 18 characters")
     @Pattern(
-            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$",
+            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&]).{8,18}$",
             message = "Password must contain uppercase, lowercase, digit, and special character"
     )
     private String password;

@@ -1,5 +1,6 @@
 package com.ecomfurniture.ecomsys.controller;
 
+import com.ecomfurniture.ecomsys.services.VerificationService;
 import com.ecomfurniture.ecomsys.services.VerificationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/verify")
 public class VerificationController {
-    private final VerificationServiceImpl verificationService;
+    private final VerificationService verificationService;
 
-    public VerificationController(VerificationServiceImpl verificationService) {
+    public VerificationController(VerificationService verificationService) {
         this.verificationService = verificationService;
     }
 

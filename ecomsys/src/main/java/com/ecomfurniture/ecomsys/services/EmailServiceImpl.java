@@ -14,10 +14,20 @@ public class EmailServiceImpl implements EmailService{
 
     @Override
     public void sendEmail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
+        System.out.println("📧 Attempting to send email to: " + to);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
+            message.setFrom("your_email@gmail.com"); // optional, but recommended
+
+            mailSender.send(message);
+            System.out.println("✅ Email sent successfully to: " + to);
+        } catch (Exception e) {
+            System.out.println("❌ Failed to send email: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
 }

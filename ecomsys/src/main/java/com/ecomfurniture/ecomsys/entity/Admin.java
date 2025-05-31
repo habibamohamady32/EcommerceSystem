@@ -26,11 +26,7 @@ public class Admin {
     private String email;
 
     @NotBlank(message = "Password is mandatory")
-    @Size(min = 8, max = 18, message = "Password must be at least 8 characters and at most 18")
-    @Pattern(
-            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-            message = "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character"
-    )
+    @Column(nullable = false, length = 255)
     private String password;
 
     @ManyToOne
@@ -45,6 +41,28 @@ public class Admin {
     private LocalDateTime tokenCreatedAt;
     private LocalDateTime tokenExpiresAt;
     private LocalDateTime tokenConfirmedAt;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expires_at")
+    private LocalDateTime resetTokenExpiresAt;
+
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+
+    public LocalDateTime getResetTokenExpiresAt() {
+        return resetTokenExpiresAt;
+    }
+
+    public void setResetTokenExpiresAt(LocalDateTime resetTokenExpiresAt) {
+        this.resetTokenExpiresAt = resetTokenExpiresAt;
+    }
 
     public String getVerificationToken() {
         return verificationToken;

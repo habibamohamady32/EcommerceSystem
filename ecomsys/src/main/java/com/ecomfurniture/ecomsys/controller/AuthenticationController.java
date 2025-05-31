@@ -2,7 +2,8 @@ package com.ecomfurniture.ecomsys.controller;
 
 import com.ecomfurniture.ecomsys.dtos.AuthResponseDTO;
 import com.ecomfurniture.ecomsys.dtos.LoginDTO;
-import com.ecomfurniture.ecomsys.security.AuthenticationService;
+import com.ecomfurniture.ecomsys.services.AuthenticationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,22 +22,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/user/login")
-    public ResponseEntity<AuthResponseDTO> userLogin(@RequestBody LoginDTO loginDTO) {
-        String token = authenticationService.authenticateAndGenerateToken(loginDTO.getEmail(), loginDTO.getPassword());
-        if (token != null) {
-            return ResponseEntity.ok(new AuthResponseDTO(token));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new AuthResponseDTO("Invalid user credentials"));
+    public ResponseEntity<AuthResponseDTO> loginUser(@Valid @RequestBody LoginDTO dto) {
+        String token = authenticationService.authenticateUser(dto.getEmail(), dto.getPassword());
+        return ResponseEntity.ok(new AuthResponseDTO(token));
     }
 
     @PostMapping("/admin/login")
-    public ResponseEntity<AuthResponseDTO> adminLogin(@RequestBody LoginDTO loginDTO) {
-        String token = authenticationService.authenticateAndGenerateToken(loginDTO.getEmail(), loginDTO.getPassword());
-        if (token != null) {
-            return ResponseEntity.ok(new AuthResponseDTO(token));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new AuthResponseDTO("Invalid admin credentials"));
+    public ResponseEntity<AuthResponseDTO> loginAdmin(@Valid @RequestBody LoginDTO dto) {
+        String token = authenticationService.authenticateAdmin(dto.getEmail(), dto.getPassword());
+        return ResponseEntity.ok(new AuthResponseDTO(token));
     }
+
 }

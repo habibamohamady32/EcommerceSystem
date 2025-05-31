@@ -1,8 +1,10 @@
 package com.ecomfurniture.ecomsys.controller;
 
+import com.ecomfurniture.ecomsys.dtos.ApiResponseDTO;
 import com.ecomfurniture.ecomsys.dtos.RegisterAdminDTO;
 import com.ecomfurniture.ecomsys.services.AdminService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,8 +22,11 @@ public class AdminController {
     }
 
     @PostMapping("/admin")
-    public ResponseEntity<?> registerAdmin(@RequestBody RegisterAdminDTO dto) {
+    public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterAdminDTO dto) {
         adminService.registerAdmin(dto);
-        return ResponseEntity.ok("Admin registered. Please verify your email.");
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new ApiResponseDTO("Admin registered. Please verify your email."));
+
     }
 }

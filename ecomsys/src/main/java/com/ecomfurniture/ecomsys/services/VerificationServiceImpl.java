@@ -29,14 +29,15 @@ public class VerificationServiceImpl implements VerificationService {
 
         User user = optionalUser.get();
 
-        // Check token expiration (assuming tokenCreatedAt is stored)
-        if (user.getTokenCreatedAt().plusMinutes(15).isBefore(LocalDateTime.now())) {
+        if (user.getTokenExpiresAt().isBefore(LocalDateTime.now())) {
             return false;
         }
 
+
         user.setEmailVerified(true);
-        user.setVerificationToken(null); // clear token after verification
+        user.setVerificationToken(null);
         user.setTokenCreatedAt(null);
+        user.setTokenExpiresAt(null);
         userRepository.save(user);
 
         return true;
@@ -51,13 +52,14 @@ public class VerificationServiceImpl implements VerificationService {
 
         Admin admin = optionalAdmin.get();
 
-        if (admin.getTokenCreatedAt().plusMinutes(15).isBefore(LocalDateTime.now())) {
+        if (admin.getTokenExpiresAt().isBefore(LocalDateTime.now())) {
             return false;
         }
 
         admin.setEmailVerified(true);
-        admin.setVerificationToken(null); // clear token after verification
+        admin.setVerificationToken(null);
         admin.setTokenCreatedAt(null);
+        admin.setTokenExpiresAt(null);
         adminRepository.save(admin);
 
         return true;

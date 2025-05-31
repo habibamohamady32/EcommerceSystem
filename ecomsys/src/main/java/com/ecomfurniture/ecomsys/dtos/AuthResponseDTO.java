@@ -1,6 +1,5 @@
 package com.ecomfurniture.ecomsys.dtos;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,7 +8,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class AuthResponseDTO {
-    private String token;
+    private String token; //focused on login tokens
 
     public AuthResponseDTO(String token) {
         this.token = token;
